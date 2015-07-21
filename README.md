@@ -4,9 +4,9 @@ Update resources media by scanning Pebble resources folder.
 
 ## Usage
 
-There are two ways to use Pebble Pre-Builder.
-The first one is run `ppb` to the folder where your appinfo.json file is. 
-The second one - the smart one - is to modify the wscript file of your pebble project.
+There are two ways to use Pebble Pre-Builder.  
+The first one is run `ppb` to the folder where your appinfo.json file is.  
+The second one - the smart one - is to modify the wscript file of your pebble project.  
 First, you have to import ruby in the top of your wscript :
 
 ```wscript
@@ -30,14 +30,10 @@ def build(ctx):
 ```
 
 Tap `pebble build` and watch the magic happen in your appinfo.json file.
-
-**Do not forget to rebuild the watchapp each time you modify the `resources` folder.**
-**Do not add or modify by hand the resources section of your appinfo.json.**
-**Do not put your resources files into nested folder.**
  
 ## Dependencies
 
-Pebble Pre-Builder use a ruby script to scan your folder and update your appinfo.json.
+Pebble Pre-Builder use a ruby script to scan your folder and update your appinfo.json.  
 If `ppb` doesn't work properly, tap this following lines in a terminal :
 
 ```
@@ -49,8 +45,8 @@ sudo apt-get install ruby && gem install json
 
 ## Images
 
-Just put your images into the `resources/images` and build the watchapp with the pebble tool.
-Pebble Pre-Builder takes the name of your image files to update the appinfo.json.
+Just put your images into the `resources/images` and build the watchapp with the pebble tool.  
+Pebble Pre-Builder takes the name of your image files to update the appinfo.json.  
 Example is always better than a bunch of words so let's take a look to the following lines :
 
 ```
@@ -79,15 +75,13 @@ resources
 ...
 ```
 
-To set the menu icon of your app, the name your image file `icon.*`.
-
-**Only the supported image formats (png, pbi, pbi8, png-trans) are generated.** 
+To set the menu icon of your app, name your image file `icon.*`.
 
 ## Fonts
 
 Generate font resources is not that easy than generate image resources.
 Like your images, put your font files into the `resources/fonts` and now pay attention.
-Pebble Pre-Builder should know which size you want for each font files.
+Pebble Pre-Builder should know which size you want for each font files.  
 To do that, put the `ppbinfo.json` file into `resources/fonts` folder and define the font size like :
 
 ```
@@ -135,6 +129,13 @@ resources
 ```
 
 If you don't provide this file or if there is no information about a certain font file, Pebble Pre-Builder will generate the font with a size of 14.
+
+## Warning
+
+Do not forget to rebuild the watchapp each time you modify the `resources` folder.  
+Do not add or modify by hand the resources section of your appinfo.json.  
+Do not put your resources files into nested folder.  
+Only the supported image formats (png, pbi, pbi8, png-trans) are generated. 
 
 ## Licence
 
