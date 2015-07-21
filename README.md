@@ -4,10 +4,12 @@ Update resources media by scanning Pebble resources folder.
 
 ## Usage
 
-There are two ways to use Pebble Pre-Builder.  
-The first one is run `ppb` to the folder where your appinfo.json file is.  
-The second one - the smart one - is to modify the wscript file of your pebble project.  
-First, you have to import ruby in the top of your wscript :
+There are two ways to use Pebble Pre-Builder :
+
+* Run `ppb` to the folder where your appinfo.json file is.
+* Modify the wscript file of your pebble project. 
+
+For the second case, you have to import ruby in the top of your wscript :
 
 ```wscript
 import os.path
@@ -45,7 +47,7 @@ sudo apt-get install ruby && gem install json
 
 ## Images
 
-Just put your images into the `resources/images` and build the watchapp with the pebble tool.  
+Just put your images into the `resources/images` and build the watchapp with the pebble tool.
 Pebble Pre-Builder takes the name of your image files to update the appinfo.json.  
 Example is always better than a bunch of words so let's take a look to the following lines :
 
@@ -132,12 +134,14 @@ If you don't provide this file or if there is no information about a certain fon
 
 ## Warning
 
-Do not forget to rebuild the watchapp each time you modify the `resources` folder.  
-Do not add or modify by hand the resources section of your appinfo.json.  
-Do not put your resources files into nested folder.  
-Only the supported image formats (png, pbi, pbi8, png-trans) are generated. 
+Pebble Pre-Builder introduce a bunch of rules. If you respect this  the following lines, everything should be ok :
+
+* Do not forget to rebuild the watchapp each time you modify the resources folder.  
+* Do not add or modify by hand the resources section of your appinfo.json.  
+* Do not put your resources files into nested folder.  
+* Only the supported image formats (png, pbi, pbi8, png-trans) are generated. 
 
 ## Licence
 
-Copyright (c) 2015 Alexis Le Provost
+Copyright (c) 2015 Alexis Le Provost  
 Licensed under the MIT license.
