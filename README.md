@@ -78,7 +78,10 @@ resources
 }
 ...
 ```
-**Only the supported image formats (raw, png, pbi, pbi8, png-trans) are generated.** 
+
+To set the menu icon of your app, the name your image file `icon.*`.
+
+**Only the supported image formats (png, pbi, pbi8, png-trans) are generated.** 
 
 ## Fonts
 

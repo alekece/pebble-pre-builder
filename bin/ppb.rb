@@ -15,7 +15,7 @@ if File.file? 'appinfo.json'
   resources.clear
   if Dir.exist? 'resources/images'
     platformFiles = []
-    supportedFormat = ['.raw', '.png', '.pbi', '.pbi8', '.png-trans']
+    supportedFormat = ['.png', '.pbi', '.pbi8', '.png-trans']
     Dir.foreach('resources/images') do |filename|
       if File.file? "resources/images/#{filename}"
         ext = File.extname(filename)
@@ -30,10 +30,12 @@ if File.file? 'appinfo.json'
           end
           platformFiles << filename
           resources << {
+              # Remove the dot character
               type: ext[1..-1],
               file: "images/#{filename}",
               name: "IMAGE_#{filename[0..-(ext.length + 1)].gsub(/\W/i, '_').upcase}"
           }
+          resources[-1]['menuIcon'] = true if filename.start_with? 'icon.'
         end
       end
     end
