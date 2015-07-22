@@ -2,6 +2,8 @@
 
 require 'json'
 
+version = '1.0.0'
+
 if File.file? 'appinfo.json'
   json = JSON.parse(File.read('appinfo.json'))
   # Ensure resource is always defined
