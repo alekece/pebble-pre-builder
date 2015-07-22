@@ -77,25 +77,25 @@ resources
 ...
 ```
 
-To set the menu icon of your app, name your image file `icon.*`.
+To set the menu icon of your app, name your image file `menu_icon.*`.
 
 ## Fonts
 
 Generate font resources is not that easy than generate image resources.
 Like your images, put your font files into the `resources/fonts` and now pay attention.
 Pebble Pre-Builder should know which size you want for each font files.
-To do that, put the `ppbinfo.json` file into `resources/fonts` folder and define the font size like :
+To do that, put the `fontinfo.json` file into `resources/fonts` folder and define the font size like :
 
 ```
 # Folder tree
 resources
 |- fonts
-|  |- ppbinfo.json
+|  |- fontinfo.json
 |  |- test.ttf
 |  |- test-thin.otf
 |  |- test-bold.otf
 
-# ppbinfo.json
+# fontinfo.json
 {
    "test.ttf": [12, 18],
    "test-thin.otf: [16]
