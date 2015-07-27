@@ -6,7 +6,7 @@ Update resources media by scanning Pebble resources folder.
 
 There are two ways to use Pebble Pre-Builder :
 
-* Run `ppb` to the folder where your appinfo.json file is.
+* Run `ppb -gALL` to the folder where your appinfo.json file is.
 * Modify the wscript file of your pebble project. 
 
 For the second case, you have to import ruby in the top of your wscript :
@@ -20,7 +20,7 @@ Then, define the pre-build function :
 
 ```wscript
 def prebuild(ctx):
-    ruby('path to the ppb script')
+    ruby('path to the ppb script', g='ALL')
 ```
 
 Finally, just put to following line into the build function :
@@ -31,9 +31,9 @@ def build(ctx):
     ...
 ```
 
-Tap `pebble build` and watch the magic happen in your appinfo.json file.
+Tap `pebble build` and watch the magic happen in your appinfo.json file and `src/generated` folder.
  
-## Dependencies
+## Installation
 
 Pebble Pre-Builder use a ruby script to scan your folder and update your appinfo.json.  
 If `ppb` doesn't work properly, tap this following lines in a terminal :
@@ -55,8 +55,10 @@ Example is always better than a bunch of words so let's take a look to the follo
 # Folder tree
 resources
 |- images
-|  |- logo.png
-|  |- background~color.pbi
+|  |- cross-pbi.png
+|  |- logo~color.png
+|  |- logo~bw.png
+|  |- timeline-pbi8.png
 
 # Updated appinfo.json file
 ...
@@ -69,68 +71,95 @@ resources
 		},
 		{
 			"type": "pbi",
-			"file": "images/background.pbi",
-			"name": "IMAGE_BACKGROUND"
+			"file": "images/cross-pbi.png",
+			"name": "IMAGE_CROSS"
+		},
+		{
+			"type": "pbi8",
+			"file": "images/timeline-pbi8.png",
+			"name": "IMAGE_TIMELINE"
 		}
 	]
 }
 ...
 ```
 
-To set the menu icon of your app, name your image file `icon.*`.
+Pebble Pre-Builder is a tool to increase speed development but it's not increase the Pebble SDK so do not forget `png` is the only image format supported by the watch.
+To set the menu icon of your app, name your image file `menu_icon(-*).png`.
+The image types values can be :
+
+* pbi
+* pbi8
+* png-trans
 
 ## Fonts
 
 Generate font resources is not that easy than generate image resources.
 Like your images, put your font files into the `resources/fonts` and now pay attention.
-Pebble Pre-Builder should know which size you want for each font files.
-To do that, put the `ppbinfo.json` file into `resources/fonts` folder and define the font size like :
+Pebble Pre-Builder should know which size and which allowed characters you want for each font files.
+Like the previous section, Example is user-friendly to understand new concept :
 
 ```
 # Folder tree
 resources
 |- fonts
-|  |- ppbinfo.json
-|  |- test.ttf
-|  |- test-thin.otf
-|  |- test-bold.otf
-
-# ppbinfo.json
-{
-   "test.ttf": [12, 18],
-   "test-thin.otf: [16]
-}
+|  |- main-ascii-12-18.ttf
+|  |- second-date-time.ttf
 
 # Updated appinfo.json file
 ...
 "resources": {
 	"media": [
 		{
-			"characterRegex": "[ -~]",
-			"file": "fonts/test.ttf",
-			"name": "FONT_TEST_12"
+		    "characterRegex": "[ -~]",
+			"type": "font",
+			"file": "fonts/man-ascii-12-18.ttf",
+			"name": "FONT_MAIN_ASCII_12"
 		},
 		{
-			"characterRegex": "[ -~]",
-			"file": "fonts/test.ttf",
-			"name": "FONT_TEST_18"
+		    "characterRegex": "[ -~]",
+			"type": "font",
+			"file": "fonts/man-ascii-12-18.ttf",
+			"name": "FONT_MAIN_ASCII_18"
 		},
-		{
-			"characterRegex": "[ -~]",
-			"file": "fonts/test-thin.ttf",
-			"name": "FONT_TEST_16"
+				{
+		    "characterRegex": "[0-9a-zA-Z ]",
+			"type": "font",
+			"file": "fonts/second-date-time.ttf"
+			"name": "FONT_SECOND_DATE_14"
 		},
-		{
-			"characterRegex": "[ -~]",
-			"file": "fonts/test-bold.ttf",
-			"name": "FONT_TEST_BOLD_14"
-		},
+				{
+		    "characterRegex": "[0-9APM ]",
+			"type": "font",
+			"file": "fonts/second-date-time.ttf"
+			"name": "FONT_SECOND_TIME_14"
+		}
 	]
 }
 ...
 ```
 
-If you don't provide this file or if there is no information about a certain font file, Pebble Pre-Builder will generate the font with a size of 14.
+If you don't provide size after allowed characters, the default font size is 14.
+The allowed characters values can be :
+
+* ascii
+* number
+* letter
+* alphanumeric
+* time 
+* date
+* temperature
+
+## Raw & Animation
+
+The resource files doesn't need treatment like image or font resources.  
+Simply add your animation (do not forget only `apng` format is supported by Pebble watch and only on Basalt platform) into `resources/animations` and your other resource files into `resources`.  
+There are no restrictions here so do what you want !
+
+## C generation
+
+To communicate between your watch application and your smartphone, Pebble use keys store in `appinfo.json`.  
+Pebble Pre-Builder generate a C file named `pebble-keys.h` into `src/generated` folder.
 
 ## Warning
 
@@ -139,7 +168,8 @@ Pebble Pre-Builder introduce a bunch of rules. If you respect this  the followin
 * Do not forget to rebuild the watchapp each time you modify the resources folder.  
 * Do not add or modify by hand the resources section of your appinfo.json.  
 * Do not put your resources files into nested folder.  
-* Only the supported image formats (png, pbi, pbi8, png-trans) are generated. 
+* Only the supported images (png, pbi, pbi8, png-trans) and fonts () are generated.
+* Do not name several files with the same name - without extension part of course.
 
 ## Licence
 
