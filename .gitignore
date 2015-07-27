@@ -1,3 +1,14 @@
-/resources/
-.idea
+# Ignore pebble test application sources
+wscript
+src
+build
+
+# Ignore required generation files
+resources
 appinfo.json
+
+# Ignore editor configuration files
+.idea
+
+# Ignore system file
+.lock-*

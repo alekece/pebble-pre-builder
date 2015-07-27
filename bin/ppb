@@ -1,80 +1,232 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 require 'json'
+require 'optparse'
 
-version = '1.0.0'
-
-if File.file? 'appinfo.json'
-  json = JSON.parse(File.read('appinfo.json'))
-  # Ensure resource is always defined
-  if json['resources'].nil?
-    json['resources'] = {'media' => []}
-  else
-    json['resources']['media'] = []
+module PebblePreBuilder
+  def self.verbose=(state)
+    @@verbose = state
   end
-  resources = json['resources']['media']
-  # Remove all previous resources
-  resources.clear
-  if Dir.exist? 'resources/images'
-    platformFiles = []
-    supportedFormat = ['.png', '.pbi', '.pbi8', '.png-trans']
-    Dir.foreach('resources/images') do |filename|
-      if File.file? "resources/images/#{filename}"
-        ext = File.extname(filename)
-        # Generate only supported image formats
-        if supportedFormat.include? ext
-          # Manage pebble platform image files
-          if filename.include? '~'
-            filename = filename.sub(/(\w)~.+/, '\1') + ext
+
+  def self.generate(targets)
+    if targets.empty?
+      self.log(:warning, 'no target to generate.')
+    else
+      if File.file? 'appinfo.json'
+        begin
+          json = JSON.parse(File.read('appinfo.json'))
+          self.log(:notice, '\'appinfo.json\' file loaded.')
+          targets.each do |target|
+            if [:resource, :c].include? target
+              self.log(:notice, "'#{target}' target launched.")
+              self.send(target, json)
+            else
+              self.log(:warning, "invalid '#{target}' target.")
+            end
           end
-          if platformFiles.include? filename
-            next
-          end
-          platformFiles << filename
-          resources << {
-              # Remove the dot character
-              type: ext[1..-1],
-              file: "images/#{filename}",
-              name: "IMAGE_#{filename[0..-(ext.length + 1)].gsub(/\W/i, '_').upcase}"
-          }
-          resources[-1]['menuIcon'] = true if filename.start_with? 'menu_icon.'
+          return true
+        rescue
+          self.log(:error, 'invalid \'appinfo.json\' file (cannot access file or incorrect json format).')
         end
+      else
+        self.log(:warning, '\'appinfo.json\' file missing.')
       end
+    end
+    return false
+  end
+
+  private
+
+  def self.c(json)
+    keys = json['appKeys']
+    if keys.respond_to? :each and keys.length > 0
+    unless Dir.exist? 'src/generated'
+      system('mkdir', '-p', 'src/generated')
+      self.log(:notice, '\'src/generated\' folder created.')
+    end
+    content = "#ifndef PEBBLE_KEYS_H\n"
+    content += "#define PEBBLE_KEYS_H\n\n"
+    content += "typedef enum {\n"
+      keys.each do |key, value|
+        key = "PEBBLE_KEYS_#{key.gsub(/\W/, '_').upcase}"
+        content += "\t#{key} = #{value},\n"
+        self.log(:notice, "generate '#{key}' key with value '#{value}'.")
+      end
+    content[-2] = ' '
+    content += "} PebbleKeys;\n\n"
+    content += '#endif'
+    begin
+      File.write('src/generated/pebble-keys.h', content)
+      self.log(:notice, '\'pebble-keys.h\' generated.')
+    rescue
+      self.log(:error, 'cannot generate \'pebble-keys.h\' file (make sure to set the good right to \'src\' folder).')
+    end
+    else
+      self.log(:notice, 'none key found.')
     end
   end
 
-  if Dir.exist? 'resources/fonts'
-    # Ensure fonts is always defined
-    fonts = if File.file? 'resources/fonts/fontinfo.json'
-            JSON.parse(File.read('resources/fonts/fontinfo.json'))
-          else
-            {}
-          end
-    Dir.foreach('resources/fonts') do |filename|
-      if File.file? "resources/fonts/#{filename}"
-        # Avoid configuration file
-        unless filename.eql? 'fontinfo.json'
-          sizes = if fonts[filename].nil?
-                    [14]
-                  else
-                    fonts[filename]
-                  end
-          ext = File.extname(filename)
-          # Magic code to remove extension later even if it's empty
-          ext << ' '
-          sizes.each do |size|
-            resources << {
-                characterRegex: '[ -~]',
-                type: 'font',
-                file: "fonts/#{filename}",
-                name: "FONT_#{filename[0..-ext.length].gsub(/\W/i, '_').upcase}_#{size}"
-            }
+  def self.resource(json)
+    # Ensure media array is always empty and defined
+    resources = (json['resources'] = {'media' => []})['media']
+    [
+        {media: nil, formats: []},
+        {media: :image, formats: ['.png']},
+        {media: :font, formats: ['.ttf']},
+        {media: :animation, formats: ['.png']}
+    ].each do |context|
+      folder = "resources#{"/#{context[:media]}s" unless context[:media].nil?}"
+      if Dir.exist? folder
+        self.log(:notice, "'#{folder}' folder scan...")
+        generatedFiles = []
+        Dir.foreach(folder) do |filename|
+          if File.file? "#{folder}/#{filename}"
+            ext = File.extname(filename)
+            if context[:formats].empty? or context[:formats].include? ext
+              # Rescue all the information about the current file
+              informations = {
+                  path: "#{"#{context[:media]}s/" unless context[:media].nil?}#{filename}",
+                  name: "#{"#{context[:media].upcase}_" unless context[:media].nil?}#{filename.sub(/(\w+)-?.+/, '\1').upcase}",
+                  # Delete the dot character
+                  extension: ext[1..-1],
+                  extra: filename.scan(/-(\w+)/).flatten
+              }
+              # Handle raw and animation resources in the same way
+              self.send(context[:media] || :animation, informations).each do |resource|
+                if generatedFiles.include? resource[:name]
+                  self.log(:warning, "conflict name '#{informations[:name]}' (generated resource skipped).")
+                  next
+                end
+                # Avoid conflict between generated resource
+                generatedFiles << resource[:name]
+                resources << resource
+                self.log(:notice, "resource '#{resource[:name]}' generated based on '#{filename}' file.")
+              end
+            else
+              self.log(:warning, "'#{filename}' file unsupported.")
+            end
           end
         end
+        self.log(:notice, "#{generatedFiles.length} #{"#{context[:media]} " unless context[:media].nil?}resource#{'s' if generatedFiles.length > 1} generated.")
+      else
+        self.log(:warning, "'#{folder}' folder missing.")
       end
     end
+    File.write('appinfo.json', JSON.pretty_generate(json))
+    self.log(:notice, '\'appinfo.json\' file updated.')
   end
 
-  File.write('appinfo.json', JSON.pretty_generate(json))
+  def self.image(informations)
+    supportedOptions = ['pbi', 'pbi8', 'png-trans']
+    informations[:extra] = informations[:extra].join('-')
+    resource = {
+        name: informations[:name]
+    }
+    if informations[:path].include? '~'
+      resource[:file] = "#{informations[:path].sub(/(\w)~.+/, '\1')}.#{informations[:extension]}"
+    else
+      resource[:file] = informations[:path]
+    end
+    resource[:type] = if supportedOptions.include? informations[:extra]
+                         informations[:extra]
+                       else
+                         'png'
+                       end
+    resource[:menuIcon] = true if informations[:name].eql? 'IMAGE_MENU_ICON'
+    return [resource]
+  end
+
+  def self.font(informations)
+    allowedCharacters = {
+        'ascii' => ' -~',
+        'number' => '0-9 ',
+        'letter' => 'a-zA-Z ',
+        'alphanumeric' => '0-9a-zA-Z ',
+        'time' => '0-9:APM ',
+        'date' => '0-9:a-zA-Z ',
+        'temperature' => '0-9°CF ',
+    }
+    characters = ''
+    size = nil
+    resources = []
+    functor = ->(informations, characters, size) {
+      resource = {}
+      unless characters.empty?
+        resource[:characterRegex] = allowedCharacters[characters]
+        characters = "#{characters.upcase}_"
+      end
+      resource[:type] = 'font'
+      resource[:name] = "#{informations[:name]}_#{characters}#{size}"
+      resource[:file] = informations[:path]
+      return resource
+    }
+    informations[:extra].each do |extra|
+      if /[0-9]/.match extra
+        size = extra
+        resources << functor.call(informations, characters, size)
+      elsif allowedCharacters.include? extra
+        if size.nil?
+          resources << functor.call(informations, characters, 14) unless characters.empty?
+        end
+        characters = extra
+        size = nil
+      else
+        self.log(:warning, extra)
+        next
+      end
+    end
+    if size.nil?
+      resources << functor.call(informations, characters, 14)
+    end
+    return resources
+  end
+
+  def self.animation(informations)
+    [{
+         type: 'raw',
+         name: informations[:name],
+         file: informations[:path]
+     }]
+  end
+
+  def self.log(type, message)
+    puts "ppb: #{type}: #{message}" if @@verbose
+  end
 end
 
+options = {}
+
+OptionParser.new do |opts|
+  opts.banner = 'Usage: pbb [options]'
+
+  opts.on('-v', '--verbose', 'Run verbosely') do |verbose|
+    options[:verbose] = true
+  end
+
+  opts.on('-gTARGET', '--generate=TARGET', String, 'Generate the given TARGET (can be resource, c or all)') do |target|
+    target.downcase!
+    options[:targets] = case target
+                          when 'resource'
+                            [:resource]
+                          when 'c'
+                            [:c]
+                          when 'all'
+                            [:resource, :c]
+                          else
+                            [target]
+                        end
+  end
+
+  opts.on_tail('-V', '--version', 'Show version') do
+    puts 'pbb 1.2.0 (2015-07-27 revision 11)'
+    exit
+  end
+
+  opts.on_tail('-h', '--help', 'Show this message') do
+    puts opts
+    exit
+  end
+end.parse!
+
+PebblePreBuilder.verbose = options[:verbose] || false
+PebblePreBuilder.generate options[:targets] || []
