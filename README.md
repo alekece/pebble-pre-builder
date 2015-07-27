@@ -163,7 +163,6 @@ Pebble Pre-Builder generate a C file named `pebble-keys.h` into `src/generated` 
 
 ```
 # appinfo.json
-
 ...
 "appKeys": {
     "dummy": 0,
@@ -172,7 +171,6 @@ Pebble Pre-Builder generate a C file named `pebble-keys.h` into `src/generated` 
 ...
 
 # generated pebble-keys.h
-
 #ifndef PEBBLE_KEYS.H
 #define PEBBLE_KEYS.H
 
