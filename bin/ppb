@@ -38,30 +38,31 @@ module PebblePreBuilder
   private
 
   def self.c(json)
+    keys = json['appKeys']
+    if keys.respond_to? :each and keys.length > 0
     unless Dir.exist? 'src/generated'
       system('mkdir', '-p', 'src/generated')
       self.log(:notice, '\'src/generated\' folder created.')
     end
-    keys = json['appKeys']
     content = "#ifndef PEBBLE_KEYS_H\n"
     content += "#define PEBBLE_KEYS_H\n\n"
-    if keys.respond_to? :each
     content += "typedef enum {\n"
       keys.each do |key, value|
         key = "PEBBLE_KEYS_#{key.gsub(/\W/, '_').upcase}"
-        content += "\t#{key} = #{value}\n"
+        content += "\t#{key} = #{value},\n"
         self.log(:notice, "generate '#{key}' key with value '#{value}'.")
       end
-      content += "} PebbleKeys;\n\n"
-    else
-      self.log(:notice, 'none key found.')
-    end
+    content[-2] = ' '
+    content += "} PebbleKeys;\n\n"
     content += '#endif'
     begin
       File.write('src/generated/pebble-keys.h', content)
       self.log(:notice, '\'pebble-keys.h\' generated.')
     rescue
       self.log(:error, 'cannot generate \'pebble-keys.h\' file (make sure to set the good right to \'src\' folder).')
+    end
+    else
+      self.log(:notice, 'none key found.')
     end
   end
 

@@ -84,8 +84,8 @@ resources
 ...
 ```
 
-Pebble Pre-Builder is a tool to increase speed development but it's not increase the Pebble SDK so do not forget `png` is the only image format supported by the watch.
-To set the menu icon of your app, name your image file `menu_icon(-*).png`.
+Pebble Pre-Builder is a tool to increase speed development but it's not increase the Pebble SDK so do not forget `png` is the only image format supported by the watch.  
+To set the menu icon of your app, name your image file `menu_icon(-*).png`.  
 The image types values can be :
 
 * pbi
@@ -97,7 +97,7 @@ The image types values can be :
 Generate font resources is not that easy than generate image resources.
 Like your images, put your font files into the `resources/fonts` and now pay attention.
 Pebble Pre-Builder should know which size and which allowed characters you want for each font files.
-Like the previous section, Example is user-friendly to understand new concept :
+Like the previous section, Example is friendly to understand new concept :
 
 ```
 # Folder tree
@@ -139,7 +139,7 @@ resources
 ...
 ```
 
-If you don't provide size after allowed characters, the default font size is 14.
+If you don't provide size after allowed characters, the default font size is 14.  
 The allowed characters values can be :
 
 * ascii
@@ -159,7 +159,29 @@ There are no restrictions here so do what you want !
 ## C generation
 
 To communicate between your watch application and your smartphone, Pebble use keys store in `appinfo.json`.  
-Pebble Pre-Builder generate a C file named `pebble-keys.h` into `src/generated` folder.
+Pebble Pre-Builder generate a C file named `pebble-keys.h` into `src/generated` folder based on `appinfo.json`.
+
+```
+# appinfo.json
+...
+"appKeys": {
+    "dummy": 0,
+    "foo bar": 42 
+},
+...
+
+# generated pebble-keys.h
+\#ifndef PEBBLE_KEYS.H
+\#define PEBBLE_KEYS.H
+
+typedef enum {
+    PEBBLE_KEYS_DUMMY = 0,
+    PEBBLE_KEYS_FOO_BAR = 42
+} PebbleKeys;
+
+\#endif
+
+```
 
 ## Warning
 
