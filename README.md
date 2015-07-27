@@ -158,11 +158,12 @@ There are no restrictions here so do what you want !
 
 ## C generation
 
-To communicate between your watch application and your smartphone, Pebble use keys store in `appinfo.json`.  
+To communicate between your watch application and your smartphone, Pebble use keys store in `appinfo.json`.
 Pebble Pre-Builder generate a C file named `pebble-keys.h` into `src/generated` folder based on `appinfo.json`.
 
 ```
 # appinfo.json
+
 ...
 "appKeys": {
     "dummy": 0,
@@ -171,15 +172,16 @@ Pebble Pre-Builder generate a C file named `pebble-keys.h` into `src/generated` 
 ...
 
 # generated pebble-keys.h
-\#ifndef PEBBLE_KEYS.H
-\#define PEBBLE_KEYS.H
+
+#ifndef PEBBLE_KEYS.H
+#define PEBBLE_KEYS.H
 
 typedef enum {
     PEBBLE_KEYS_DUMMY = 0,
     PEBBLE_KEYS_FOO_BAR = 42
 } PebbleKeys;
 
-\#endif
+#endif
 
 ```
 
