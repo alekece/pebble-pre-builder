@@ -39,3 +39,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Little generation mistakes.
+
+## 1.3.0 (03 august, 2015)
+### Fixed 
+- Skip resources file starting by a dot character.
