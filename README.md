@@ -192,6 +192,7 @@ Pebble Pre-Builder introduce a bunch of rules. If you respect this  the followin
 * Do not put your resources files into nested folder.  
 * Only the supported images (png, pbi, pbi8, png-trans) and fonts () are generated.
 * Do not name several files with the same name - without extension part of course.
+* Resources file starting by a dot character is skipped.
 
 ## Licence
 
