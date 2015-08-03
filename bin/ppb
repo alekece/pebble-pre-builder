@@ -80,7 +80,7 @@ module PebblePreBuilder
         self.log(:notice, "'#{folder}' folder scan...")
         generatedFiles = []
         Dir.foreach(folder) do |filename|
-          if File.file? "#{folder}/#{filename}"
+          if File.file? "#{folder}/#{filename}" and filename[0] != '.'
             ext = File.extname(filename)
             if context[:formats].empty? or context[:formats].include? ext
               # Rescue all the information about the current file
@@ -229,4 +229,4 @@ OptionParser.new do |opts|
 end.parse!
 
 PebblePreBuilder.verbose = options[:verbose] || false
-PebblePreBuilder.generate options[:targets] || []
+PebblePreBuilder.generate(options[:targets] || [])
