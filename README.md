@@ -1,6 +1,6 @@
 # Pebble Pre-Builder
 
-Update resources media by scanning Pebble resources folder.
+Update resources media by scanning Pebble resources folder and generate C header file based on application keys.
 
 ## Usage
 
